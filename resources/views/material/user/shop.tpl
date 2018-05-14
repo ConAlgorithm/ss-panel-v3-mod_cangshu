@@ -31,46 +31,6 @@
 						</div>
 					</div>
 					
-					<div class="table-responsive">
-						{$shops->render()}
-						<table class="table ">
-                            <tr>
-								<th>操作</th>
-                                <th>ID</th>
-                                <th>名称</th>
-								<th>价格</th>
-								<th>内容</th>
-                                <th>自动续费天数</th>
-								<th>续费时重置流量</th>
-                                
-                            </tr>
-                            {foreach $shops as $shop}
-                            <tr>
-								<td>
-                                    <a class="btn btn-brand-accent" href="javascript:void(0);" onClick="buy('{$shop->id}',{$shop->auto_renew},{$shop->auto_reset_bandwidth})">购买</a>
-                                </td>
-                                <td>#{$shop->id}</td>
-                                <td>{$shop->name}</td>
-								<td>{$shop->price} 元</td>
-                                <td>{$shop->content()}</td>
-								{if $shop->auto_renew==0}
-                                <td>不能自动续费</td>
-								{else}
-								<td>可选 在 {$shop->auto_renew} 天后自动续费</td>
-								{/if}
-								
-								{if $shop->auto_reset_bandwidth==0}
-                                <td>不自动重置</td>
-								{else}
-								<td>自动重置</td>
-								{/if}
-                                
-                            </tr>
-                            {/foreach}
-                        </table>
-						{$shops->render()}
-					</div>
-					
 					
 					<div aria-hidden="true" class="modal modal-va-middle fade" id="coupon_modal" role="dialog" tabindex="-1">
 						<div class="modal-dialog modal-xs">
@@ -127,6 +87,34 @@
 			
 			
 			
+		</div>
+		
+		<div class="container">
+			{foreach $shops as $shop}
+			<div class="col-lg-3 col-sm-3">
+				<div class="card">
+					<div class="card-main">
+						<div class="card-inner">
+							<p>#{$shop->id}</p>
+	                        <p>{$shop->name}</p>
+							<p>{$shop->price} 元</p>
+	                        <p>{$shop->content()}</p>
+							{if $shop->auto_renew==0}
+	                        	<p>不能自动续费</p>
+							{else}
+								<p>可选 在 {$shop->auto_renew} 天后自动续费</p>
+							{/if}									
+							{if $shop->auto_reset_bandwidth==0}
+	                        	<p>不自动重置</p>
+							{else}
+								<p>自动重置</p>
+							{/if}
+							<p><a class="btn btn-brand-accent" href="javascript:void(0);" onClick="buy('{$shop->id}',{$shop->auto_renew},{$shop->auto_reset_bandwidth})">购买</a></p>
+						</div>
+					</div>
+				</div>
+			</div>
+			{/foreach}
 		</div>
 	</main>
 
