@@ -90,26 +90,26 @@
 		</div>
 		
 		<div class="container">
-			{foreach $shops as $shop}
+			{foreach $groups as $group_name => $group}
 			<div class="col-lg-3 col-sm-3">
 				<div class="card">
 					<div class="card-main">
 						<div class="card-inner">
-							<p>#{$shop->id}</p>
-	                        <p>{$shop->name}</p>
-							<p>{$shop->price} 元</p>
-	                        <p>{$shop->content()}</p>
-							{if $shop->auto_renew==0}
-	                        	<p>不能自动续费</p>
-							{else}
-								<p>可选 在 {$shop->auto_renew} 天后自动续费</p>
-							{/if}									
-							{if $shop->auto_reset_bandwidth==0}
-	                        	<p>不自动重置</p>
-							{else}
-								<p>自动重置</p>
-							{/if}
-							<p><a class="btn btn-brand-accent" href="javascript:void(0);" onClick="buy('{$shop->id}',{$shop->auto_renew},{$shop->auto_reset_bandwidth})">购买</a></p>
+	                        <p>{$group_name}</p>
+							<p id="{$group_name}_id">#</p>
+							<p id="{$group_name}_price"> 元</p>
+	                        <p id="{$group_name}_content"></p>
+	                        <p id="{$group_name}_auto_renew"></p>
+							<p id="{$group_name}_auto_reset_bandwidth"></p>
+	                        <div class="form-group form-group-label">
+	                        <label class="floating-label">请选择套餐</label>
+	                        <select id="{$group_name}_select" class="form-control" onchange="changeshop('{$group_name}')">
+	                        	{foreach $group as $shop}
+	                            	<option value="{$shop->id}">{$shop->price}元 {$shop->name}</option>
+	                            {/foreach}
+	                        </select>
+	                        </div>
+							<p><a class="btn btn-brand-accent" href="javascript:void(0);" onClick="buy('{$group_name}')">购买</a></p>
 						</div>
 					</div>
 				</div>
@@ -130,9 +130,54 @@
 
 
 <script>
-function buy(id,auto,auto_reset) {
-	auto_renew=auto;
-	if(auto==0)
+$(document).ready(function(){
+	shop = new Array();
+	{foreach $groups as $group_name => $group}
+		shop["{$group_name}"] = new Array();
+		{foreach $group as $shop}
+			shop["{$group_name}"]["{$shop->id}"] = new Array();
+			shop["{$group_name}"]["{$shop->id}"]["name"] = "{$shop->name}";
+			shop["{$group_name}"]["{$shop->id}"]["price"] = "{$shop->price}";
+			shop["{$group_name}"]["{$shop->id}"]["content"] = "{$shop->content()}";
+			shop["{$group_name}"]["{$shop->id}"]["auto_renew"] = "{$shop->auto_renew}";
+			shop["{$group_name}"]["{$shop->id}"]["auto_reset_bandwidth"] = "{$shop->auto_reset_bandwidth}";
+		{/foreach}		
+		changeshop("{$group_name}");
+	{/foreach}
+});
+
+function changeshop(group_name) {
+	var id = $("#"+group_name+"_"+"select").val();
+	var price = shop[group_name][$("#"+group_name+"_"+"select").val()]["price"];
+	var content = shop[group_name][$("#"+group_name+"_"+"select").val()]["content"];
+	var auto_renew = shop[group_name][$("#"+group_name+"_"+"select").val()]["auto_renew"];
+	var auto_reset_bandwidth = shop[group_name][$("#"+group_name+"_"+"select").val()]["auto_reset_bandwidth"];
+	$("#"+group_name+"_"+"id").html("#"+id);
+	$("#"+group_name+"_"+"price").html(price+" 元");
+	$("#"+group_name+"_"+"content").html(content);
+	if(auto_renew==0)
+	{
+		$("#"+group_name+"_"+"auto_renew").html("不能自动续费");
+	}
+	else
+	{
+		$("#"+group_name+"_"+"auto_renew").html("可选 在 "+auto_renew+" 天后自动续费");
+	}
+	if(auto_reset_bandwidth==0)
+	{
+		$("#"+group_name+"_"+"auto_reset_bandwidth").html("不自动重置");
+	}
+	else
+	{
+		$("#"+group_name+"_"+"auto_reset_bandwidth").html("自动重置");
+	}
+}
+
+function buy(group_name) {
+	id = $("#"+group_name+"_"+"select").val();
+	auto_renew = shop[group_name][$("#"+group_name+"_"+"select").val()]["auto_renew"];
+	auto_reset_bandwidth = shop[group_name][$("#"+group_name+"_"+"select").val()]["auto_reset_bandwidth"];
+	if(auto_renew==0)
 	{
 		document.getElementById('autor').style.display="none";
 	}
@@ -141,7 +186,7 @@ function buy(id,auto,auto_reset) {
 		document.getElementById('autor').style.display="";
 	}
 	
-	if(auto_reset==0)
+	if(auto_reset_bandwidth==0)
 	{
 		document.getElementById('auto_reset').style.display="none";
 	}
@@ -149,8 +194,6 @@ function buy(id,auto,auto_reset) {
 	{
 		document.getElementById('auto_reset').style.display="";
 	}
-	
-	shop=id;
 	$("#coupon_modal").modal();
 }
 
@@ -162,7 +205,7 @@ $("#coupon_input").click(function () {
 			dataType: "json",
 			data: {
 				coupon: $("#coupon").val(),
-				shop: shop
+				shop: id
 			},
 			success: function (data) {
 				if (data.ret) {
@@ -199,7 +242,7 @@ $("#order_input").click(function () {
 			dataType: "json",
 			data: {
 				coupon: $("#coupon").val(),
-				shop: shop,
+				shop: id,
 				autorenew: autorenew
 			},
 			success: function (data) {
